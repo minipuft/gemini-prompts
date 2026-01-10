@@ -1,0 +1,1 @@
+../core/hooks/gemini/before-agent.py

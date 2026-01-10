@@ -1,0 +1,9 @@
+# Python
+*.pyc
+__pycache__/
+
+# Debug logs
+.gemini/hook-debug.log
+
+# OS
+.DS_Store
