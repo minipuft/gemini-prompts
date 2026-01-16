@@ -1,3 +1,4 @@
 [submodule "core"]
 	path = core
 	url = https://github.com/minipuft/claude-prompts-mcp.git
+	branch = dist
