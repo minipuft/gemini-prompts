@@ -1,6 +1,6 @@
 {
     "name": "gemini-prompts",
-    "version": "1.2.0",
+    "version": "1.3.2",
     "description": "Hot-reloadable prompts with chains, gates, and symbolic syntax (>>prompt --> >>chain @framework :: 'gate')",
     "main": "GEMINI.md",
     "mcpServers": {
