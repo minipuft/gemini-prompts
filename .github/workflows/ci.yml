@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate extension structure
+        run: |
+          # Check required files exist
+          test -f gemini-extension.json
+          test -f GEMINI.md
+          test -f hooks/hooks.json
+          test -d node_modules/claude-prompts/dist
+          test -d node_modules/claude-prompts/hooks
+
+          echo "Extension structure validated successfully"
+
+      - name: Validate hooks symlink target
+        run: |
+          # Verify hooks/lib symlink points to correct location
+          test -L hooks/lib
+          test -d node_modules/claude-prompts/hooks/lib
+
+          echo "Hooks symlink validated successfully"

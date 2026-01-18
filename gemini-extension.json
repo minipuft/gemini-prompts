@@ -5,11 +5,11 @@
     "main": "GEMINI.md",
     "mcpServers": {
         "gemini-prompts": {
-            "command": "node",
-            "args": ["${extensionPath}${/}server${/}dist${/}index.js", "--transport=stdio"],
+            "command": "npx",
+            "args": ["claude-prompts", "--transport=stdio"],
             "env": {
-                "MCP_WORKSPACE": "${extensionPath}",
-                "MCP_RESOURCES_PATH": "${extensionPath}${/}server${/}resources"
+                "MCP_WORKSPACE": "${extensionPath}${/}node_modules${/}claude-prompts",
+                "MCP_RESOURCES_PATH": "${extensionPath}${/}node_modules${/}claude-prompts${/}resources"
             }
         }
     }
