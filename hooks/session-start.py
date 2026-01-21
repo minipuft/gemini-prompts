@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 """
-Gemini Adapter: SessionStart Hook
-Wraps dev-sync logic.
+Gemini SessionStart Hook - No-op placeholder.
+
+Dev-sync is not needed for Gemini:
+- Developers: Link install means source changes are live
+- Users: npm package is source of truth, no dev source to sync
 """
-import sys
-from pathlib import Path
+import json
 
-# Add shared lib/hooks root
-CORE_HOOKS_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(CORE_HOOKS_DIR))
 
-# dev-sync is standalone, we can just run it
-import importlib.util
-spec = importlib.util.spec_from_file_location("dev_sync", CORE_HOOKS_DIR / "dev-sync.py")
-dev_sync = importlib.util.module_from_spec(spec)
-sys.modules["dev_sync"] = dev_sync
-spec.loader.exec_module(dev_sync)
+def main():
+    # Output empty JSON for Gemini hook protocol
+    print(json.dumps({}))
+
 
 if __name__ == "__main__":
-    dev_sync.main()
+    main()
