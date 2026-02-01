@@ -1,0 +1,39 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - name: Summary
+        if: always()
+        env:
+          RELEASE_CREATED: ${{ steps.release.outputs.release_created }}
+          TAG_NAME: ${{ steps.release.outputs.tag_name }}
+          PR_JSON: ${{ steps.release.outputs.pr }}
+        run: |
+          echo "## Release Please Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "$RELEASE_CREATED" == "true" ]]; then
+            echo "**Release created**: $TAG_NAME" >> $GITHUB_STEP_SUMMARY
+          elif [[ -n "$PR_JSON" ]]; then
+            PR_NUMBER=$(echo "$PR_JSON" | jq -r '.number')
+            echo "**Release PR updated**: #$PR_NUMBER" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No release action needed" >> $GITHUB_STEP_SUMMARY
+          fi
