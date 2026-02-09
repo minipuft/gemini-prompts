@@ -1,6 +1,6 @@
 # Gemini Prompts Hooks
 
-Hooks for Gemini CLI that provide the same functionality as Claude Code hooks: syntax detection, chain tracking, and gate reminders.
+Hooks for Gemini CLI that provide syntax detection, chain tracking, gate enforcement, context tracking, and skill catalog injection.
 
 ## Why Hooks?
 
@@ -9,6 +9,9 @@ Hooks for Gemini CLI that provide the same functionality as Claude Code hooks: s
 | Model ignores `>>analyze` syntax | `before-agent.py` detects and suggests MCP call |
 | User forgets to continue chain | `after-tool.py` injects chain progress reminder |
 | Gate review skipped | `after-tool.py` reminds: `GATE_REVIEW: PASS\|FAIL` |
+| FAIL verdict executed anyway | `gate-enforce.py` blocks prompt_engine with deny decision |
+| Ralph loop loses file context | `ralph-context-tracker.py` records edits/commands silently |
+| Skills not surfaced on startup | `session-start.py` injects categorized skill catalog |
 | Session state bloat | `pre-compact.py` cleans up before compression |
 
 ## Requirements
@@ -46,26 +49,30 @@ ln -s "$(pwd)" ~/.gemini/extensions/gemini-prompts
 
 ```
 hooks/
-├── hooks.json          # Gemini hooks config
-├── before-agent.py     # BeforeAgent (syntax detection)
-├── after-tool.py       # AfterTool (chain/gate tracking)
-├── pre-compact.py      # PreCompress (session cleanup)
-├── session-start.py    # SessionStart (dev sync)
-├── stop.py             # SessionEnd (graceful shutdown)
-└── lib -> ../core/hooks/lib   # Shared utilities (via submodule)
+├── hooks.json                 # Gemini hooks config
+├── before-agent.py            # BeforeAgent (syntax detection)
+├── gate-enforce.py            # BeforeTool (gate verdict enforcement)
+├── after-tool.py              # AfterTool:prompt_engine (chain/gate tracking)
+├── ralph-context-tracker.py   # AfterTool:edit/write/bash (Ralph context)
+├── session-start.py           # SessionStart (skill catalog injection)
+├── pre-compact.py             # PreCompress (session cleanup)
+├── stop.py                    # SessionEnd (graceful shutdown)
+└── lib -> ../node_modules/claude-prompts/hooks/lib  # Shared utilities
 ```
 
-**Shared utilities** (`lib/`) are provided by the `core` submodule, which tracks the [claude-prompts-mcp](https://github.com/minipuft/claude-prompts-mcp) dist branch.
+**Shared utilities** (`lib/`) are symlinked to the `claude-prompts` npm package, providing `session_state`, `session_tracker`, `lesson_extractor`, `workspace`, and `cache_manager` modules.
 
 ## Hook Event Mapping
 
-| Gemini Event | Claude Code Equivalent | Purpose |
-|--------------|------------------------|---------|
-| `BeforeAgent` | `UserPromptSubmit` | Detect `>>prompt` syntax |
-| `AfterTool` | `PostToolUse` | Track chain state, gate reminders |
-| `PreCompress` | `PreCompact` | Clean session state |
-| `SessionStart` | `SessionStart` | Dev sync |
-| `SessionEnd` | `Stop` | Graceful shutdown |
+| Gemini Event | Claude Code Equivalent | Hook | Purpose |
+|--------------|------------------------|------|---------|
+| `SessionStart` | `SessionStart` | `session-start.py` | Skill catalog injection |
+| `BeforeAgent` | `UserPromptSubmit` | `before-agent.py` | Detect `>>prompt` syntax |
+| `BeforeTool` | `PreToolUse` | `gate-enforce.py` | Block FAIL verdicts / missing gate responses |
+| `AfterTool` | `PostToolUse` | `after-tool.py` | Track chain state, gate reminders |
+| `AfterTool` | `PostToolUse` | `ralph-context-tracker.py` | Track file/command changes for Ralph |
+| `PreCompress` | `PreCompact` | `pre-compact.py` | Preserve state across compression |
+| `SessionEnd` | `Stop` | `stop.py` | Shell verification loop control |
 
 ## Configuration
 
@@ -74,25 +81,23 @@ Hooks are configured in `hooks/hooks.json`:
 ```json
 {
   "hooks": {
-    "BeforeAgent": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "python3 ${extensionPath}${/}hooks${/}before-agent.py",
-        "timeout": 5000
-      }]
-    }],
-    "AfterTool": [{
+    "BeforeTool": [{
       "matcher": "prompt_engine",
       "hooks": [{
+        "name": "gate-enforce",
         "type": "command",
-        "command": "python3 ${extensionPath}${/}hooks${/}after-tool.py",
-        "timeout": 5000
+        "command": "python3 ${extensionPath}${/}hooks${/}gate-enforce.py"
       }]
-    }]
+    }],
+    "AfterTool": [
+      { "matcher": "prompt_engine", "hooks": [{ "...": "chain-tracker" }] },
+      { "matcher": "write_file|replace|bash|task_tool", "hooks": [{ "...": "ralph-context-tracker" }] }
+    ]
   }
 }
 ```
+
+**Dual AfterTool matchers**: Two separate matcher entries fire independently — `prompt_engine` for chain/gate tracking, `write_file|replace|bash|task_tool` for Ralph context tracking.
 
 **Key differences from Claude Code:**
 
@@ -101,6 +106,15 @@ Hooks are configured in `hooks/hooks.json`:
 | Path variable | `${extensionPath}` | `${CLAUDE_PLUGIN_ROOT}` |
 | Path separator | `${/}` (cross-platform) | `/` |
 | Timeout | milliseconds | seconds |
+| Block decision | `{ "decision": "deny", "reason": "..." }` | `{ "hookSpecificOutput": { "permissionDecision": "deny" } }` |
+
+## Known Gaps
+
+| Claude Code Hook | Gemini Status | Impact |
+|-----------------|---------------|--------|
+| `subagent-gate-enforce` | No equivalent event | Delegated sub-agents can complete without satisfying gate criteria |
+
+Gemini CLI does not expose a sub-agent completion event (`SubagentStop` equivalent). Sub-agents are still experimental in Gemini CLI. When the event is added upstream, port Claude's `subagent-gate-enforce.py` using the same I/O adaptation pattern as `gate-enforce.py`.
 
 ## Verifying Hooks Work
 
@@ -116,14 +130,14 @@ Hooks are configured in `hooks/hooks.json`:
 | "hooks.enabled" error | Upgrade: `npm i -g @google/gemini-cli@latest` |
 | Hooks not firing | Check `~/.gemini/settings.json` has `"hooks": { "enabled": true }` |
 | Hooks running twice | Using symlink? Don't add hooks to `settings.json` |
-| Import errors | Verify `lib` symlink exists and points to `../core/hooks/lib` |
+| Import errors | Verify `lib` symlink exists and points to `../node_modules/claude-prompts/hooks/lib` |
 
 ## Updating
 
-The `lib/` utilities come from the `core` submodule. To update:
+The `lib/` utilities come from the `claude-prompts` npm package. To update:
 
 ```bash
-git submodule update --remote --merge
+npm update claude-prompts
 ```
 
-This pulls the latest shared utilities from claude-prompts-mcp without changing the Gemini-specific hook scripts.
+This pulls the latest shared utilities without changing the Gemini-specific hook scripts.

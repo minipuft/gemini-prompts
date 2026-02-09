@@ -3,11 +3,11 @@
         "SessionStart": [{
             "matcher": "startup",
             "hooks": [{
-                "name": "dev-sync",
+                "name": "session-skills",
                 "type": "command",
                 "command": "python3 ${extensionPath}${/}hooks${/}session-start.py",
-                "description": "Quick-check sync for development (skips if no changes)",
-                "timeout": 15000
+                "description": "Inject skill catalog and skill-first protocol",
+                "timeout": 10000
             }]
         }],
         "BeforeAgent": [{
@@ -20,16 +20,38 @@
                 "timeout": 5000
             }]
         }],
-        "AfterTool": [{
+        "BeforeTool": [{
             "matcher": "prompt_engine",
             "hooks": [{
-                "name": "chain-tracker",
+                "name": "gate-enforce",
                 "type": "command",
-                "command": "python3 ${extensionPath}${/}hooks${/}after-tool.py",
-                "description": "Track chain state and pending gates",
+                "command": "python3 ${extensionPath}${/}hooks${/}gate-enforce.py",
+                "description": "Block prompt_engine calls with FAIL verdicts or missing gate responses",
                 "timeout": 5000
             }]
         }],
+        "AfterTool": [
+            {
+                "matcher": "prompt_engine",
+                "hooks": [{
+                    "name": "chain-tracker",
+                    "type": "command",
+                    "command": "python3 ${extensionPath}${/}hooks${/}after-tool.py",
+                    "description": "Track chain state and pending gates",
+                    "timeout": 5000
+                }]
+            },
+            {
+                "matcher": "write_file|replace|bash|task_tool",
+                "hooks": [{
+                    "name": "ralph-context-tracker",
+                    "type": "command",
+                    "command": "python3 ${extensionPath}${/}hooks${/}ralph-context-tracker.py",
+                    "description": "Track file changes and tool usage for Ralph loops",
+                    "timeout": 5000
+                }]
+            }
+        ],
         "PreCompress": [{
             "matcher": "manual|auto",
             "hooks": [{

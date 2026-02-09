@@ -42,15 +42,26 @@ You should see the model call `prompt_engine` with the correct syntax.
 
 ## Hooks
 
-| Gemini Event | Claude Code Equivalent | Purpose |
-|--------------|------------------------|---------|
-| `BeforeAgent` | `UserPromptSubmit` | Detect `>>prompt` syntax |
-| `AfterTool` | `PostToolUse` | Chain/gate tracking |
-| `PreCompress` | `PreCompact` | Session cleanup |
-| `SessionStart` | `SessionStart` | Initialization |
-| `SessionEnd` | `Stop` | Graceful shutdown |
+| Gemini Event | Claude Code Equivalent | Purpose | Status |
+|--------------|------------------------|---------|--------|
+| `BeforeAgent` | `UserPromptSubmit` | Detect `>>prompt` syntax | Implemented |
+| `AfterTool` | `PostToolUse` | Chain/gate tracking | Implemented |
+| `PreCompress` | `PreCompact` | Session cleanup | Implemented |
+| `SessionStart` | `SessionStart` | Skill catalog injection | Implemented |
+| `SessionEnd` | `Stop` | Graceful shutdown | Implemented |
+| `BeforeTool` | `PreToolUse` | Pre-execution gate blocking | Implemented |
+| `AfterTool` (dual) | `PostToolUse` (Edit/Write/Bash) | Ralph context tracking | Implemented |
+| — | `SubagentStop` | Sub-agent gate enforcement | **Not available** |
 
-Unlike OpenCode, Gemini CLI has full hook parity with Claude Code.
+### Hook Parity with Claude Code
+
+Gemini CLI covers all closeable hook gaps: syntax detection, chain tracking, gate enforcement, context tracking, skill catalog, and compression. One gap remains:
+
+| Gap | Gemini Support | Impact |
+|-----|---------------|--------|
+| Sub-agent gate enforcement | No `SubagentStop` event exists in Gemini CLI | Delegated sub-agents can complete without satisfying gate criteria |
+
+Sub-agents are experimental in Gemini CLI. When the event is added upstream, port Claude's `subagent-gate-enforce.py` with the same I/O adaptation pattern used for `gate-enforce.py`.
 
 ## Configuration
 
