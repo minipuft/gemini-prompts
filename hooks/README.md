@@ -1,6 +1,6 @@
 # Gemini Prompts Hooks
 
-Hooks for Gemini CLI that provide syntax detection, chain tracking, gate enforcement, context tracking, and skill catalog injection.
+Hooks for Gemini CLI that provide syntax detection, chain tracking, gate enforcement, and context tracking.
 
 ## Why Hooks?
 
@@ -11,7 +11,7 @@ Hooks for Gemini CLI that provide syntax detection, chain tracking, gate enforce
 | Gate review skipped | `after-tool.py` reminds: `GATE_REVIEW: PASS\|FAIL` |
 | FAIL verdict executed anyway | `gate-enforce.py` blocks prompt_engine with deny decision |
 | Ralph loop loses file context | `ralph-context-tracker.py` records edits/commands silently |
-| Skills not surfaced on startup | `session-start.py` injects categorized skill catalog |
+
 | Session state bloat | `pre-compact.py` cleans up before compression |
 
 ## Requirements
@@ -54,7 +54,7 @@ hooks/
 ├── gate-enforce.py            # BeforeTool (gate verdict enforcement)
 ├── after-tool.py              # AfterTool:prompt_engine (chain/gate tracking)
 ├── ralph-context-tracker.py   # AfterTool:edit/write/bash (Ralph context)
-├── session-start.py           # SessionStart (skill catalog injection)
+
 ├── pre-compact.py             # PreCompress (session cleanup)
 ├── stop.py                    # SessionEnd (graceful shutdown)
 └── lib -> ../node_modules/claude-prompts/hooks/lib  # Shared utilities
@@ -66,7 +66,7 @@ hooks/
 
 | Gemini Event | Claude Code Equivalent | Hook | Purpose |
 |--------------|------------------------|------|---------|
-| `SessionStart` | `SessionStart` | `session-start.py` | Skill catalog injection |
+
 | `BeforeAgent` | `UserPromptSubmit` | `before-agent.py` | Detect `>>prompt` syntax |
 | `BeforeTool` | `PreToolUse` | `gate-enforce.py` | Block FAIL verdicts / missing gate responses |
 | `AfterTool` | `PostToolUse` | `after-tool.py` | Track chain state, gate reminders |

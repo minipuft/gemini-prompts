@@ -1,15 +1,5 @@
 {
     "hooks": {
-        "SessionStart": [{
-            "matcher": "startup",
-            "hooks": [{
-                "name": "session-skills",
-                "type": "command",
-                "command": "python3 ${extensionPath}${/}hooks${/}session-start.py",
-                "description": "Inject skill catalog and skill-first protocol",
-                "timeout": 10000
-            }]
-        }],
         "BeforeAgent": [{
             "matcher": "*",
             "hooks": [{

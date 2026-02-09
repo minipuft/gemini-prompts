@@ -47,7 +47,7 @@ You should see the model call `prompt_engine` with the correct syntax.
 | `BeforeAgent` | `UserPromptSubmit` | Detect `>>prompt` syntax | Implemented |
 | `AfterTool` | `PostToolUse` | Chain/gate tracking | Implemented |
 | `PreCompress` | `PreCompact` | Session cleanup | Implemented |
-| `SessionStart` | `SessionStart` | Skill catalog injection | Implemented |
+
 | `SessionEnd` | `Stop` | Graceful shutdown | Implemented |
 | `BeforeTool` | `PreToolUse` | Pre-execution gate blocking | Implemented |
 | `AfterTool` (dual) | `PostToolUse` (Edit/Write/Bash) | Ralph context tracking | Implemented |
@@ -55,7 +55,7 @@ You should see the model call `prompt_engine` with the correct syntax.
 
 ### Hook Parity with Claude Code
 
-Gemini CLI covers all closeable hook gaps: syntax detection, chain tracking, gate enforcement, context tracking, skill catalog, and compression. One gap remains:
+Gemini CLI covers all closeable hook gaps: syntax detection, chain tracking, gate enforcement, context tracking, and compression. Skill catalog injection is handled by the global `session-skills` hook from the core `claude-prompts` installation. One gap remains:
 
 | Gap | Gemini Support | Impact |
 |-----|---------------|--------|
