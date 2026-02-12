@@ -8,7 +8,7 @@
             "command": "npx",
             "args": ["claude-prompts", "--transport=stdio"],
             "env": {
-                "MCP_WORKSPACE": "${extensionPath}${/}node_modules${/}claude-prompts",
+                "MCP_WORKSPACE": "${extensionPath}",
                 "MCP_RESOURCES_PATH": "${extensionPath}${/}node_modules${/}claude-prompts${/}resources"
             }
         }
