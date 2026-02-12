@@ -14,15 +14,18 @@ from pathlib import Path
 SHARED_LIB = Path(__file__).resolve().parent / "lib"
 sys.path.insert(0, str(SHARED_LIB))
 
+def _project_root() -> Path:
+    # hooks/after-tool.py -> hooks -> project_root
+    return Path(__file__).resolve().parents[1]
+
+# Default workspace root to extension root, without overriding user config
+os.environ.setdefault("MCP_WORKSPACE", str(_project_root()))
+
 from session_state import (
     load_session_state,
     save_session_state,
     parse_prompt_engine_response,
 )
-
-def _project_root() -> Path:
-    # hooks/after-tool.py -> hooks -> project_root
-    return Path(__file__).resolve().parents[1]
 
 
 def _log_debug(message: str) -> None:
@@ -122,6 +125,7 @@ def main():
     if output_lines:
         final_output = "\n".join(output_lines)
         out = {
+            "decision": "allow",
             "hookSpecificOutput": {
                 "hookEventName": "AfterTool",
                 "additionalContext": final_output

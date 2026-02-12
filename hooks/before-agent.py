@@ -14,6 +14,13 @@ from pathlib import Path
 SHARED_LIB = Path(__file__).resolve().parent / "lib"
 sys.path.insert(0, str(SHARED_LIB))
 
+def _project_root() -> Path:
+    # hooks/before-agent.py -> hooks -> project_root
+    return Path(__file__).resolve().parents[1]
+
+# Default workspace root to extension root, without overriding user config
+os.environ.setdefault("MCP_WORKSPACE", str(_project_root()))
+
 from cache_manager import (
     load_prompts_cache,
     get_prompt_by_id,
@@ -24,10 +31,6 @@ from session_state import load_session_state, format_chain_reminder
 
 # Duplicate logic from prompt-suggest.py but adapted for Gemini I/O
 # This ensures we don't break Claude if we change one or the other.
-
-def _project_root() -> Path:
-    # hooks/before-agent.py -> hooks -> project_root
-    return Path(__file__).resolve().parents[1]
 
 
 def _log_debug(message: str) -> None:
@@ -156,6 +159,7 @@ def main():
         # Gemini Specific Output Format for BeforeAgent
         # systemMessage is NOT supported in BeforeAgent, use additionalContext
         out = {
+            "decision": "allow",
             "hookSpecificOutput": {
                 "hookEventName": "BeforeAgent",
                 "additionalContext": final_output

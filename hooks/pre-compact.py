@@ -13,10 +13,14 @@ instead of importlib dynamic import.
 
 import json
 import sys
+import os
 from pathlib import Path
 
 # Add shared lib to path (lib/ is symlinked to core/hooks/lib/)
 sys.path.insert(0, str(Path(__file__).parent / "lib"))
+
+# Default workspace root to extension root, without overriding user config
+os.environ.setdefault("MCP_WORKSPACE", str(Path(__file__).resolve().parents[1]))
 
 from session_state import load_session_state, format_chain_reminder
 

@@ -14,15 +14,19 @@ tool name conventions. No output (silent tracking).
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
 # Add shared lib to path (lib/ is symlinked to core/hooks/lib/)
 sys.path.insert(0, str(Path(__file__).parent / "lib"))
 
+# Default workspace root to extension root, without overriding user config
+os.environ.setdefault("MCP_WORKSPACE", str(Path(__file__).resolve().parents[1]))
+
 from session_tracker import get_session_tracker
 from lesson_extractor import summarize_error
-from workspace import get_runtime_state_dir
+from verify_active_store import load_verify_active_state
 
 
 def parse_hook_input() -> dict:
@@ -37,20 +41,12 @@ def get_active_ralph_session() -> str | None:
     """
     Get the currently active Ralph session ID.
 
-    Checks for verify-active.json state file (source of truth for Ralph sessions).
+    Checks verify-state.db via shared verify_active_store.
     """
-    dev_fallback = Path(__file__).parent.parent / "runtime-state"
-    runtime_dir = get_runtime_state_dir(dev_fallback)
-    state_file = runtime_dir / "verify-active.json"
-
-    if not state_file.exists():
+    state = load_verify_active_state()
+    if not state:
         return None
-
-    try:
-        state = json.loads(state_file.read_text())
-        return state.get("sessionId")
-    except (json.JSONDecodeError, IOError):
-        return None
+    return state.get("sessionId")
 
 
 def extract_file_change_details(tool_input: dict, tool_name: str) -> dict | None:

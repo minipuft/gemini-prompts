@@ -62,6 +62,10 @@ hooks/
 
 **Shared utilities** (`lib/`) are symlinked to the `claude-prompts` npm package, providing `session_state`, `session_tracker`, `lesson_extractor`, `workspace`, and `cache_manager` modules.
 
+Runtime state is SQLite-backed:
+- `runtime-state/hooks-state.db` (`chain_session_state`, `ralph_session_state`)
+- `runtime-state/verify-state.db` (`verify_active_state`)
+
 ## Hook Event Mapping
 
 | Gemini Event | Claude Code Equivalent | Hook | Purpose |

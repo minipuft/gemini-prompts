@@ -13,10 +13,14 @@ decision/reason instead of hookSpecificOutput.permissionDecision.
 import json
 import re
 import sys
+import os
 from pathlib import Path
 
 # Add shared lib to path (lib/ is symlinked to core/hooks/lib/)
 sys.path.insert(0, str(Path(__file__).parent / "lib"))
+
+# Default workspace root to extension root, without overriding user config
+os.environ.setdefault("MCP_WORKSPACE", str(Path(__file__).resolve().parents[1]))
 
 from session_state import load_session_state
 
@@ -76,6 +80,7 @@ def main():
             deny(f"Gate pending: {gate}. Submit gate_verdict first.")
 
     # All checks passed — allow tool execution
+    print(json.dumps({"decision": "allow"}))
     sys.exit(0)
 
 

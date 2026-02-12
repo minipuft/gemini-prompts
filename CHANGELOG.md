@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Hook execution environment now explicitly sets `MCP_WORKSPACE` to correctly resolve SQLite state across symlinked directories, fixing silent failures in prompt detection and tracking
+- Updated hooks (`before-agent`, `after-tool`, `gate-enforce`, `pre-compact`, `ralph-context-tracker`) for compatibility with `claude-prompts` v1.7.0+ SQLite state backend
+
+### Changed
+
+- Aligned hook JSON output with strict Gemini CLI contract by adding explicit `decision` fields (e.g., `decision: "allow"`) to prevent ambiguous behavior
+
+
 ## [1.3.2] - 2025-01-18
 
 ### Fixed
