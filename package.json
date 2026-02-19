@@ -8,7 +8,7 @@
     "claude-prompts": "^1.4.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.4.1",
+    "@commitlint/cli": "^20.4.2",
     "@commitlint/config-conventional": "^20.4.1",
     "husky": "^9.1.7"
   },
