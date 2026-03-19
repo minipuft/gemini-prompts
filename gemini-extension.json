@@ -1,16 +1,19 @@
 {
-    "name": "gemini-prompts",
-    "version": "2.0.0",
-    "description": "Hot-reloadable prompts with chains, gates, and symbolic syntax (>>prompt --> >>chain @framework :: 'gate')",
-    "main": "GEMINI.md",
-    "mcpServers": {
-        "gemini-prompts": {
-            "command": "npx",
-            "args": ["claude-prompts", "--transport=stdio"],
-            "env": {
-                "MCP_WORKSPACE": "${extensionPath}",
-                "MCP_RESOURCES_PATH": "${extensionPath}${/}node_modules${/}claude-prompts${/}resources"
-            }
-        }
+  "name": "gemini-prompts",
+  "version": "2.1.0",
+  "description": "Hot-reloadable prompts with chains, gates, and symbolic syntax (>>prompt --> >>chain @framework :: 'gate')",
+  "main": "GEMINI.md",
+  "mcpServers": {
+    "gemini-prompts": {
+      "command": "npx",
+      "args": [
+        "claude-prompts",
+        "--transport=stdio"
+      ],
+      "env": {
+        "MCP_WORKSPACE": "${extensionPath}",
+        "MCP_RESOURCES_PATH": "${extensionPath}${/}node_modules${/}claude-prompts${/}resources"
+      }
     }
+  }
 }
