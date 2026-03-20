@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "claude-prompts": "^2.0.0"
+    "claude-prompts": "^2.1.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",
