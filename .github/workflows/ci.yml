@@ -14,11 +14,14 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: '.node-version'
           cache: npm
 
+      # `npm ci`, not `npm install`. `npm install` silently repairs a lockfile that
+      # disagrees with package.json, so it cannot detect the desync that blocked
+      # opencode-prompts' releases for months. `npm ci` fails on it, which is the point.
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Validate extension structure
         run: |
