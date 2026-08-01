@@ -2,6 +2,7 @@
   "name": "gemini-prompts",
   "version": "1.3.2",
   "description": "Gemini CLI extension for claude-prompts MCP server - hot-reloadable prompts with chains, gates, and symbolic syntax",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "dependencies": {
