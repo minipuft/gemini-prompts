@@ -1,0 +1,22 @@
+name: Consumer Contract
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  consumer-contract:
+    name: Consumer Contract
+    permissions:
+      contents: read
+    uses: minipuft/repository-standards/.github/workflows/consumer-contract.yml@bb7c4fa89e2766ad39ac1b1e597ba8e5cd805d83 # v1.0.0
+    with:
+      profile: node-consumer
+      contract-path: downstream-contract.json
+      standards-ref: bb7c4fa89e2766ad39ac1b1e597ba8e5cd805d83
