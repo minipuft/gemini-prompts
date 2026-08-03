@@ -1,0 +1,6 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>minipuft/repository-standards//renovate/downstream.json#v1.0.1"
+  ]
+}
