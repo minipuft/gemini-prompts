@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "profile": "node-consumer",
+  "nodeVersionFile": ".node-version",
+  "packageManager": "npm",
+  "upstreamPackage": "claude-prompts",
+  "upstreamWriter": "claude-prompts-release-sync",
+  "requiredPaths": [
+    "gemini-extension.json",
+    "GEMINI.md",
+    "hooks/hooks.json",
+    "hooks/lib",
+    "node_modules/claude-prompts/dist",
+    "node_modules/claude-prompts/hooks"
+  ],
+  "requiredChecks": ["Consumer Contract", "validate"],
+  "localValidationWorkflow": ".github/workflows/ci.yml"
+}
