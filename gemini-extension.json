@@ -11,8 +11,7 @@
         "--transport=stdio"
       ],
       "env": {
-        "MCP_WORKSPACE": "${extensionPath}",
-        "MCP_RESOURCES_PATH": "${extensionPath}${/}node_modules${/}claude-prompts${/}resources"
+        "MCP_WORKSPACE": "${extensionPath}"
       }
     }
   }
