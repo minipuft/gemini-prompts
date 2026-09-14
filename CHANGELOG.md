@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Removed `MCP_RESOURCES_PATH` from the extension's MCP server config, since a `gemini extensions install` clone never runs `npm install` and the `node_modules/claude-prompts/resources` path it pointed at never exists; the server now serves its own bundled resources, which claude-prompts refuses to start without once it stops silently falling back
 - Hook execution environment now explicitly sets `MCP_WORKSPACE` to correctly resolve SQLite state across symlinked directories, fixing silent failures in prompt detection and tracking
 - Updated hooks (`before-agent`, `after-tool`, `gate-enforce`, `pre-compact`, `ralph-context-tracker`) for compatibility with `claude-prompts` v1.7.0+ SQLite state backend
 

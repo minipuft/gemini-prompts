@@ -74,7 +74,7 @@ The extension auto-registers the MCP server. Manual override in `gemini-extensio
       "command": "npx",
       "args": ["claude-prompts", "--transport=stdio"],
       "env": {
-        "MCP_WORKSPACE": "${extensionPath}${/}node_modules${/}claude-prompts"
+        "MCP_WORKSPACE": "${extensionPath}"
       }
     }
   }
