@@ -37,13 +37,16 @@ def parse_hook_input() -> dict:
         return {}
 
 
-def get_active_ralph_session() -> str | None:
+def get_active_ralph_session(host_session_id: str) -> str | None:
     """
-    Get the currently active Ralph session ID.
+    Get the host session's active Ralph session ID.
 
-    Checks verify-state.db via shared verify_active_store.
+    Reads the one verify-state.db row keyed by the host session id via shared
+    verify_active_store. A hook with no session id has no row to read.
     """
-    state = load_verify_active_state()
+    if not host_session_id:
+        return None
+    state = load_verify_active_state(host_session_id)
     if not state:
         return None
     return state.get("sessionId")
@@ -113,7 +116,8 @@ def main():
     )
 
     # Only track during active Ralph sessions
-    ralph_session = get_active_ralph_session()
+    host_session_id = hook_input.get("session_id", "") or hook_input.get("sessionId", "")
+    ralph_session = get_active_ralph_session(host_session_id)
     if not ralph_session:
         sys.exit(0)
 
