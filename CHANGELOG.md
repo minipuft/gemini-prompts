@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1](https://github.com/minipuft/gemini-prompts/compare/v2.0.0...v2.0.1) (2026-10-16)
+
+
+### Fixed
+
+* **hooks:** the Ralph context tracker reads only the host session's verify row ([#48](https://github.com/minipuft/gemini-prompts/issues/48)) ([5ae6667](https://github.com/minipuft/gemini-prompts/commit/5ae6667edb86cd00d241cd20b5f9f441ad7e6b2d))
+
 ## [2.0.0](https://github.com/minipuft/gemini-prompts/compare/v1.3.2...v2.0.0) (2026-09-14)
 
 
