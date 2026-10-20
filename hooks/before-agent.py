@@ -151,7 +151,7 @@ def main():
     if inline_gates:
         gates_str = " | ".join(g[:40] for g in inline_gates[:3])
         output_lines.append(f"[Gates] {gates_str}")
-        output_lines.append("  Respond: GATE_REVIEW: PASS|FAIL - <reason>")
+        output_lines.append('  Respond: gate_verdict={"overall":"PASS|FAIL","rationale":"<reason>"}')
 
     # OUTPUT
     if output_lines:

@@ -3,7 +3,8 @@
 BeforeTool hook: Enforce gate verdicts on prompt_engine calls.
 
 Blocks:
-1. GATE_REVIEW: FAIL without retry attempt
+1. A FAIL gate_verdict without retry attempt (structured `overall: FAIL`, or
+   the legacy `GATE_REVIEW: FAIL` string)
 2. Missing gate_verdict when resuming a chain that requires it
 
 Gemini adaptation of Claude's gate-enforce.py — uses top-level
@@ -39,6 +40,31 @@ def deny(reason: str) -> None:
     sys.exit(0)
 
 
+def read_fail_verdict(gate_verdict) -> tuple[bool, str]:
+    """Return (is_fail, reason) for either gate_verdict shape.
+
+    Engines from 6.0 send a structured object ({"overall": "PASS"|"FAIL",
+    "rationale": "..."}); older engines send "GATE_REVIEW: FAIL - reason".
+    A value of any other shape, or an object without a string `overall`,
+    is not a FAIL.
+    """
+    if isinstance(gate_verdict, dict):
+        overall = gate_verdict.get("overall")
+        if not isinstance(overall, str) or overall.strip().upper() != "FAIL":
+            return False, ""
+        rationale = gate_verdict.get("rationale")
+        reason = rationale.strip()[:50] if isinstance(rationale, str) else ""
+        return True, reason or "unspecified"
+
+    if isinstance(gate_verdict, str):
+        if not re.search(r'GATE_REVIEW:\s*FAIL', gate_verdict, re.IGNORECASE):
+            return False, ""
+        reason_match = re.search(r'FAIL\s*[-:]\s*(.+)', gate_verdict, re.IGNORECASE)
+        return True, reason_match.group(1).strip()[:50] if reason_match else "unspecified"
+
+    return False, ""
+
+
 def main():
     hook_input = parse_hook_input()
 
@@ -63,12 +89,9 @@ def main():
     gate_verdict = tool_input.get("gate_verdict", "")
 
     # Check 1: FAIL verdict should trigger retry guidance
-    if gate_verdict:
-        fail_match = re.search(r'GATE_REVIEW:\s*FAIL', gate_verdict, re.IGNORECASE)
-        if fail_match:
-            reason_match = re.search(r'FAIL\s*[-:]\s*(.+)', gate_verdict, re.IGNORECASE)
-            reason = reason_match.group(1).strip()[:50] if reason_match else "unspecified"
-            deny(f"Gate FAIL: {reason}. Improve and retry with PASS.")
+    failed, reason = read_fail_verdict(gate_verdict)
+    if failed:
+        deny(f"Gate FAIL: {reason}. Improve and retry with PASS.")
 
     # Check 2: Resuming chain without required gate_verdict
     if chain_id and not gate_verdict:

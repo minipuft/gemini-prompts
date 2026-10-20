@@ -112,7 +112,7 @@ def main():
         criteria = state.get("gate_criteria", [])
         criteria_str = " | ".join(c[:40] for c in criteria[:3]) if criteria else ""
         output_lines.append(f"[Gate] {state['pending_gate']}")
-        output_lines.append("  Respond: GATE_REVIEW: PASS|FAIL - <reason>")
+        output_lines.append('  Respond: gate_verdict={"overall":"PASS|FAIL","rationale":"<reason>"}')
         if criteria_str:
             output_lines.append(f"  Check: {criteria_str}")
 

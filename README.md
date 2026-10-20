@@ -10,7 +10,7 @@ Gemini CLI extension for the [claude-prompts](https://github.com/minipuft/claude
 |---------|----------|--------|
 | Model ignores `>>analyze` syntax | BeforeAgent hook detects and suggests MCP call | Syntax works like Claude Code |
 | Chain step forgotten | AfterTool hook injects progress reminder | `[Chain] Step 2/5 - continue` appears |
-| Gate review skipped | AfterTool hook reminds response format | `GATE_REVIEW: PASS\|FAIL` prompt appears |
+| Gate review skipped | AfterTool hook reminds response format | `gate_verdict` `PASS\|FAIL` prompt appears |
 | Session state bloat | PreCompress hook cleans up | Fresh context after compaction |
 
 ## Quick Start
@@ -35,7 +35,7 @@ You should see the model call `prompt_engine` with the correct syntax.
 
 - **Syntax Detection** — `>>prompt` triggers MCP call suggestion via BeforeAgent hook
 - **Chain Tracking** — Shows `Step 2/4` progress after each prompt_engine call
-- **Gate Reminders** — Injects `GATE_REVIEW: PASS|FAIL` format when gates are pending
+- **Gate Reminders** — Injects the structured `gate_verdict` format (`overall` PASS|FAIL, `rationale`) when gates are pending
 - **State Preservation** — Session state survives compression
 - **Auto-cleanup** — Clears state on session end
 - **Bundled MCP Server** — Includes claude-prompts via npm dependency

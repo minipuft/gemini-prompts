@@ -8,7 +8,7 @@ Hooks for Gemini CLI that provide syntax detection, chain tracking, gate enforce
 |---------|---------------|
 | Model ignores `>>analyze` syntax | `before-agent.py` detects and suggests MCP call |
 | User forgets to continue chain | `after-tool.py` injects chain progress reminder |
-| Gate review skipped | `after-tool.py` reminds: `GATE_REVIEW: PASS\|FAIL` |
+| Gate review skipped | `after-tool.py` reminds: `gate_verdict` `{"overall": "PASS\|FAIL", "rationale": "..."}` |
 | FAIL verdict executed anyway | `gate-enforce.py` blocks prompt_engine with deny decision |
 | Ralph loop loses file context | `ralph-context-tracker.py` records edits/commands silently |
 
