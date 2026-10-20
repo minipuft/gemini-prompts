@@ -39,7 +39,7 @@ Framework management, analytics, and status.
 
 When executing chains, hooks will remind you of progress:
 - `[Chain] Step 1/3 - call prompt_engine to continue`
-- `[Gate] review - Respond: GATE_REVIEW: PASS|FAIL - <reason>`
+- `[Gate] review - Respond: gate_verdict={"overall":"PASS|FAIL","rationale":"<reason>"}`
 
 ## More Information
 

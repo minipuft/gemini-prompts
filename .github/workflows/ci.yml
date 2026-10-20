@@ -41,3 +41,6 @@ jobs:
           test -d node_modules/claude-prompts/hooks/lib
 
           echo "Hooks symlink validated successfully"
+
+      - name: Hook tests
+        run: python3 -m unittest discover -s hooks/tests
