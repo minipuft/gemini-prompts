@@ -87,14 +87,6 @@ function detectPlan(files, explicit) {
   );
 }
 
-/** Plan filename → initiative slug: no dir, no `.md`, no `-implementation-notes`, no trailing date. */
-function initiativeSlug(planPath) {
-  const base = path.basename(planPath, ".md");
-  return base
-    .replace(/-implementation-notes$/, "")
-    .replace(/-\d{4}-\d{2}-\d{2}$/, "");
-}
-
 function escapeRegExp(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -263,8 +255,7 @@ function main() {
   });
   const decisions = adrDecisions(facts.addedOrModified, resolveAdrDir());
   const trailers = [];
-  if (plan)
-    trailers.push(`Plan: \`${plan}\``, `Initiative: ${initiativeSlug(plan)}`);
+  if (plan) trailers.push(`Plan: \`${plan}\``);
   trailers.push(...decisions.map((d) => `Decision: ${d}`));
 
   const tail = [""];
