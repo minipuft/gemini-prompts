@@ -28,9 +28,10 @@
  *           pointer — a PR carrying a plan does not merge until that plan is finalized in it.
  *           The footer is also the ONLY sanctioned plan mention; row ids and plan vocabulary in
  *           the body are the session voice this whole file exists to keep out.
- *   FAIL  · a `Plan:` footer with no `Initiative:` trailer — the initiative slug is the join key
- *           `git log --grep` reads across a multi-PR initiative, and a plan footer with no
- *           initiative trailer is a dangling join.
+ *   OK    · a `Plan:` footer alone is complete: it is the join key. The initiative slug is a pure
+ *           function of the plan path, so a reader assembles a multi-PR initiative's history with
+ *           `git log --grep='Plan: .*<slug>'`. An `Initiative:` trailer left in an older body is
+ *           ignored, never an error (the trailer was retired 2026-10-06).
  *   FAIL  · a `Decision:` trailer naming an ADR number with no `<adrDir>/<NNNN>-*.md` file at this
  *           checkout — the trailer asserts a decision exists; this checks that assertion the same
  *           way the `Plan:` footer's existence check does.
@@ -103,9 +104,10 @@ const REPO_ROOT = path.resolve(
 );
 
 // ---------------------------------------------------------------------------------------------
-// Plan row lifecycle primitive — vendored from the plan-row-tracking gate rather than imported
-// across repositories (see header). This is the ONE definition of "what counts as a row" and
-// "what counts as closed"; a second parser here would drift from that gate silently.
+// Plan row lifecycle primitive. This template is the ONE definition of "what counts as a row" and
+// "what counts as closed". A consumer's own plan-row gate that reads the same tables must agree
+// with it rather than carry a second parser. It is not imported across repositories because the
+// managed copy is what ships: every consumer receives this file byte-identical.
 // ---------------------------------------------------------------------------------------------
 
 /** Rows are markdown table rows; ✓ may sit in any cell, usually the status column. */
@@ -263,8 +265,7 @@ function stripFences(text) {
 }
 
 /**
- * Comments, fenced blocks, AND `<details>` archives stripped. Trailers (`Plan:`, `Initiative:`,
- * `Decision:`) are only real outside all three — the generated skeleton's own comment block
+ * Comments, fenced blocks, AND `<details>` archives stripped. Trailers (`Plan:`, `Decision:`) are only real outside all three — the generated skeleton's own comment block
  * mentions the trailer names as guidance, a `## Demonstration` fenced example may show what one
  * looks like, and a collapsed appendix may quote an example body that names one too.
  */
@@ -562,23 +563,6 @@ function checkPlanFooter(body, failures, repoRoot, readPlanAtMergeBase) {
   }
 }
 
-/**
- * A `Plan:` footer with no `Initiative:` trailer is a dangling join: `git log --grep` reads the
- * initiative slug to assemble a multi-PR initiative's history, and a plan carried with no slug
- * cannot be found that way.
- */
-function checkInitiativeTrailer(body, failures) {
-  const visible = stripTrailerNoise(body);
-  const hasPlanFooter = /^Plan:\s*`?plans\/\S+?`?\s*$/m.test(visible);
-  const hasInitiative = /^Initiative:\s*\S+/m.test(visible);
-  if (hasPlanFooter && !hasInitiative) {
-    failures.push(
-      "`Plan:` footer has no `Initiative:` trailer — the initiative slug is the join key " +
-        "`git log --grep` reads; add `Initiative: <plan slug>`",
-    );
-  }
-}
-
 /** `.delivery-contract.json` → `answers.adrDir`, or `DEFAULT_ADR_DIR` when absent or unset. */
 function defaultAdrDir(repoRoot) {
   const answersPath = path.join(repoRoot, ".delivery-contract.json");
@@ -665,7 +649,6 @@ export function checkBody(body, title, options = {}) {
   checkPlaceholders(body, failures);
   checkVerificationRows(sections, failures, hasVerifiedHeading);
   checkPlanFooter(body, failures, repoRoot, readPlanAtMergeBase);
-  checkInitiativeTrailer(body, failures);
   checkDecisionTrailer(body, failures, repoRoot, adrDir);
   return { failures, warnings: collectWarnings(body, sections) };
 }
@@ -828,9 +811,8 @@ function selfTest() {
     "## Notes for Reviewers\n\nDistrust commit abc.\n",
   ].join("\n");
   const noFail = (r) => r.failures.length === 0;
-  /** A `Plan:` footer paired with the `Initiative:` trailer the new rule requires alongside it. */
-  const withPlanFooter = (relPath, initiative = "test-initiative") =>
-    `\nInitiative: ${initiative}\nPlan: \`${relPath}\`\n`;
+  /** A `Plan:` footer: the only plan line a body carries, and the join key. */
+  const withPlanFooter = (relPath) => `\nPlan: \`${relPath}\`\n`;
   const cases = [
     {
       name: "filled feat body passes",
@@ -1002,18 +984,18 @@ function selfTest() {
       title: "feat(chains): x",
       expect: (r) => r.warnings.some((w) => w.includes("no table")),
     },
-    // --- Initiative trailer ---
+    // --- Plan footer is the join key ---
     {
-      name: "Plan footer with Initiative trailer passes",
-      body: `${filled}${withPlanFooter("plans/retired.md", "vendor-plan-row-states")}`,
+      name: "a Plan footer alone passes",
+      body: `${filled}${withPlanFooter("plans/retired.md")}`,
       title: "feat(chains): x",
       expect: noFail,
     },
     {
-      name: "Plan footer without Initiative trailer fails",
-      body: `${filled}\nPlan: \`plans/retired.md\`\n`,
+      name: "a retired Initiative trailer beside a Plan footer is ignored",
+      body: `${filled}${withPlanFooter("plans/retired.md")}Initiative: old-slug\n`,
       title: "feat(chains): x",
-      expect: (r) => r.failures.some((f) => f.includes("Initiative")),
+      expect: noFail,
     },
     // --- Decision trailer ---
     {
@@ -1030,17 +1012,17 @@ function selfTest() {
     },
     // --- Fenced example text is content, never a trailer ---
     {
-      name: "Plan/Initiative/Decision lines inside a fenced Demonstration example are content, not trailers",
+      name: "Plan/Decision lines inside a fenced Demonstration example are content, not trailers",
       body: filled.replace(
         "```\nbefore\n```",
-        "```\nPlan: `plans/gone.md`\nInitiative: bogus\nDecision: ADR-0008\n```",
+        "```\nPlan: `plans/gone.md`\nDecision: ADR-0008\n```",
       ),
       title: "feat(chains): x",
       expect: noFail,
     },
     {
       name: "the same lines outside a fence still trigger the existing failures",
-      body: `${filled}\nPlan: \`plans/gone.md\`\nInitiative: bogus\nDecision: ADR-0008\n`,
+      body: `${filled}\nPlan: \`plans/gone.md\`\nDecision: ADR-0008\n`,
       title: "feat(chains): x",
       expect: (r) =>
         r.failures.some((f) => f.includes("does not exist")) &&
