@@ -9,7 +9,7 @@ Use symbolic syntax to execute prompts:
 ```
 >>prompt_id                    # Execute single prompt
 >>step1 --> >>step2            # Chain prompts sequentially
->>prompt @CAGEERF              # Apply methodology framework
+>>prompt ^CAGEERF              # Apply methodology framework
 >>prompt :: 'quality criteria' # Add inline validation gate
 ```
 
