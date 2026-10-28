@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The framework operator is written `^NAME` (`>>prompt ^CAGEERF`) in the extension description and `GEMINI.md`; `@NAME` still works, with a note from the server
 - Aligned hook JSON output with strict Gemini CLI contract by adding explicit `decision` fields (e.g., `decision: "allow"`) to prevent ambiguous behavior
 
 
