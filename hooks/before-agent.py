@@ -87,15 +87,16 @@ def format_tool_call(prompt_id: str, info: dict) -> str:
     if not args:
         return f'prompt_engine(command:">>{prompt_id}")'
     
-    options_parts = []
+    # Prompt argument values travel in `inputs`; `options` is for execution hints.
+    inputs_parts = []
     for arg in args:
         name = arg.get("name", "")
         default = arg.get("default")
         placeholder = f'"{default}"' if default else f'"<{name}>"'
-        options_parts.append(f'"{name}": {placeholder}')
-    
-    options_str = ", ".join(options_parts)
-    return f'prompt_engine(command:">>{prompt_id}", options:{{{options_str}}})'
+        inputs_parts.append(f'"{name}": {placeholder}')
+
+    inputs_str = ", ".join(inputs_parts)
+    return f'prompt_engine(command:">>{prompt_id}", inputs:{{{inputs_str}}})'
 
 def main():
     hook_input = parse_hook_input()
