@@ -82,21 +82,32 @@ def detect_inline_gates(message: str) -> list[str]:
     ids = re.findall(id_pattern, message)
     return quoted + ids
 
+def _quote_inline_value(value: object) -> str:
+    """Write a value as a double-quoted inline argument of the command string.
+
+    The server reads `name:"value"` and unescapes the quoted text: a backslash is an escape
+    character, so a literal backslash or double quote is escaped, and a line break is written
+    as `\\n` so the command stays on one line.
+    """
+    text = str(value)
+    for raw, escaped in (("\\", "\\\\"), ('"', '\\"'), ("\n", "\\n"), ("\r", "\\r"), ("\t", "\\t")):
+        text = text.replace(raw, escaped)
+    return f'"{text}"'
+
 def format_tool_call(prompt_id: str, info: dict) -> str:
-    args = info.get("arguments", [])
-    if not args:
-        return f'prompt_engine(command:">>{prompt_id}")'
-    
-    # Prompt argument values travel in `inputs`; `options` is for execution hints.
-    inputs_parts = []
-    for arg in args:
+    """The `prompt_engine` call suggested for `>>prompt_id`.
+
+    Argument values are written inline in the command string, the form every released server
+    parses for a prompt and for a chain's first step. The command is rendered as a JSON string,
+    so the quotes around each value appear escaped, as the model writes them in the tool call.
+    """
+    command = f">>{prompt_id}"
+    for arg in info.get("arguments", []):
         name = arg.get("name", "")
         default = arg.get("default")
-        placeholder = f'"{default}"' if default else f'"<{name}>"'
-        inputs_parts.append(f'"{name}": {placeholder}')
-
-    inputs_str = ", ".join(inputs_parts)
-    return f'prompt_engine(command:">>{prompt_id}", inputs:{{{inputs_str}}})'
+        value = default if default else f"<{name}>"
+        command += f" {name}:{_quote_inline_value(value)}"
+    return f"prompt_engine(command:{json.dumps(command, ensure_ascii=False)})"
 
 def main():
     hook_input = parse_hook_input()
